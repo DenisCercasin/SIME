@@ -1,0 +1,13 @@
+[
+  {
+    "url": "javascript:apex.theme42.dialog('SECRET-CHECKSUM')",
+    "title": "<div class='lesson-card'><div class='lesson-order'>1</div><div class='lesson-time'><span>08:15</span><span>09:00</span></div><span class='lesson-text-wrap'>Biologie</span><span class='lesson-room'>A33</span><span class='lesson-teacher'>Example Teacher</span><span class='lesson-homework'>стр 12 № 3 в тетради, № 8 - по желанию</span></div>",
+    "start": "2026-10-08T08:15:00",
+    "end": "2026-10-08T09:00:00"
+  },
+  {
+    "title": "<div class='lesson-card'><span class='lesson-order'>2</span><span class='lesson-text-wrap'>Limba română</span><span class='lesson-teacher'>Irina Exemplu</span></div>",
+    "start": "2026-10-08T09:10:00",
+    "end": "2026-10-08T09:55:00"
+  }
+]
