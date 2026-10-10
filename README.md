@@ -1,12 +1,14 @@
 # SIME MCP
 
-Local, read-only access to an **authorized** [SIME electronic diary](https://agenda.sime.md/) through a Python CLI and STDIO MCP server. The browser performs normal SIME navigation; the application observes calendar responses and extracts lessons and homework. It does not manage passwords or call an external AI API.
+Local, read-only access to an **authorized** [SIME electronic diary](https://agenda.sime.md/) through a Python CLI and STDIO MCP server. The browser performs normal SIME navigation; the application observes calendar responses and extracts lessons, homework, and grades shown on calendar cards. It does not manage passwords or call an external AI API.
 
 ## Status and limits
 
-The parser, services, cache, CLI, and MCP tools are implemented and covered by synthetic tests. Calendar and homework retrieval through the CLI and local MCP client have also been verified with an authorized SIME session. The site's Oracle APEX markup and AJAX behavior are undocumented and may change. Grades and attendance are planned extensions only; no such tools are exposed. The subject list reflects only the current month unless a different month is supplied in the CLI.
+The parser, services, cache, CLI, and MCP tools are implemented and covered by synthetic tests. Calendar and homework retrieval through the CLI and local MCP client have also been verified with an authorized SIME session. Calendar grades were inspected in an authorized session. The site's Oracle APEX markup and AJAX behavior are undocumented and may change. A separate grades page and attendance are not supported. The subject list reflects only the current month unless a different month is supplied in the CLI.
 
 Homework belongs to the **lesson date**. SIME's calendar event does not establish a due date, so `due_date` is `null`. Missing homework is also `null`, not a claim that no work was assigned.
+
+Grades are copied as text from the calendar card's `.lesson-grade` elements. The date is the associated lesson date; the integration does not infer when a mark was awarded or reinterpret unusual values. Lessons without a displayed grade have an empty `grades` list.
 
 ## Architecture
 
@@ -14,7 +16,7 @@ Homework belongs to the **lesson date**. SIME's calendar event does not establis
 SIME website in isolated Playwright Chromium
   -> observe the site's calendar response
   -> BeautifulSoup / Pydantic normalization
-  -> calendar, homework, subject services
+  -> calendar, homework, grade, subject services
   -> CLI or local STDIO MCP tools
   -> optional private SQLite snapshots
 ```
@@ -58,6 +60,7 @@ An isolated Chromium window opens at SIME's public page. Choose your account rol
 .venv/bin/sime check-auth
 .venv/bin/sime fetch-calendar --year 2026 --month 10
 .venv/bin/sime homework --from 2026-10-10 --to 2026-10-17
+.venv/bin/sime grades --from 2026-10-01 --to 2026-10-31
 .venv/bin/sime subjects
 ```
 
@@ -82,11 +85,12 @@ The read-only tools are:
 
 - `get_schedule(start_date, end_date)`
 - `get_homework(start_date, end_date)`
+- `get_grades(start_date, end_date)`
 - `get_subjects()`
 - `get_today_schedule()`
 - `get_week_schedule(week_start)`
 
-Dates are ISO `YYYY-MM-DD`; ranges are inclusive and limited to 12 calendar months. Today uses `Europe/Chisinau`. Tool output contains structured lesson or homework objects without cookies, session URLs, event HTML, or student IDs.
+Dates are ISO `YYYY-MM-DD`; ranges are inclusive and limited to 12 calendar months. Today uses `Europe/Chisinau`. Tool output contains structured lesson, homework, or grade objects without cookies, session URLs, event HTML, or student IDs.
 
 For a quick local protocol check after installation:
 
@@ -99,7 +103,7 @@ The MCP tests invoke the registered tools with a mocked calendar service; they n
 
 ## Cache and privacy
 
-Caching is opt in. When enabled, SQLite stores normalized lessons, retrieval times, and changes between month snapshots. It stores no cookies or raw network responses. Slot matching uses lesson date plus lesson number, falling back to start time. A room, teacher, subject, time, or homework edit on the same slot is an update. A renumbered or moved lesson may appear as a removal and addition. A missing event from one snapshot may reflect transient site data, so review changes before treating them as authoritative.
+Caching is opt in. When enabled, SQLite stores normalized lessons (including displayed grades), retrieval times, and changes between month snapshots. It stores no cookies or raw network responses. Slot matching uses lesson date plus lesson number, falling back to start time. A room, teacher, subject, time, homework, or grade edit on the same slot is an update. A renumbered or moved lesson may appear as a removal and addition. A missing event from one snapshot may reflect transient site data, so review changes before treating them as authoritative.
 
 ```sh
 .venv/bin/sime changes
@@ -118,6 +122,6 @@ Caching is opt in. When enabled, SQLite stores normalized lessons, retrieval tim
 
 ## Planned work and ChatGPT integration
 
-Grades and attendance require separate authorized inspection of their UI and browser network behavior, plus synthetic tests. They are intentionally absent from the MCP surface until implemented.
+The calendar tool includes only grades displayed on lesson cards. A separate grades page and attendance require authorized inspection of their UI and browser behavior before implementation.
 
 The current server uses local STDIO. A remote ChatGPT connection would require a separate authenticated HTTPS Streamable HTTP endpoint, authorization controls, a safe way to keep a browser session on the host, and verification of current ChatGPT MCP support. A local interactive browser is a poor fit for an unattended remote server. No remote listener or public tunnel is provided. Before scheduled or unattended access, verify SIME's terms and permitted automation methods. If unattended access is not allowed, keep this as a manual, user initiated workflow.

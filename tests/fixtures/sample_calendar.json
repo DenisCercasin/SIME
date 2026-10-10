@@ -6,7 +6,7 @@
     "end": "2026-10-08T09:00:00"
   },
   {
-    "title": "<div class='lesson-card'><span class='lesson-order'>2</span><span class='lesson-text-wrap'>Limba română</span><span class='lesson-teacher'>Irina Exemplu</span></div>",
+    "title": "<div class='lesson-card'><span class='lesson-order'>2</span><span class='lesson-text-wrap'>Limba română</span><span class='lesson-teacher'>Irina Exemplu</span><span class='lesson-grade'>9</span></div>",
     "start": "2026-10-08T09:10:00",
     "end": "2026-10-08T09:55:00"
   }

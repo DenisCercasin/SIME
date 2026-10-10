@@ -14,6 +14,13 @@ def test_homework_has_no_invented_due_date():
     assert item.model_dump(mode="json")["lesson_date"] == "2026-10-08"
 
 
+def test_lesson_without_grade_defaults_to_empty_list():
+    lesson = Lesson(
+        date=date(2026, 10, 8), subject="Math", start_time=time(8), end_time=time(9)
+    )
+    assert lesson.grades == []
+
+
 def test_lesson_rejects_extra_sensitive_fields():
     with pytest.raises(ValidationError):
         Lesson(

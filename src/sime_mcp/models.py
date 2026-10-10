@@ -16,6 +16,7 @@ class Lesson(BaseModel):
     teacher: str | None = None
     room: str | None = None
     homework: str | None = None
+    grades: list[str] = Field(default_factory=list)
 
     @model_validator(mode="after")
     def valid_times(self) -> "Lesson":
@@ -33,6 +34,17 @@ class HomeworkAssignment(BaseModel):
     teacher: str | None = None
     source: str = "calendar"
     due_date: date | None = None
+
+
+class LessonGrade(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    lesson_date: date
+    subject: str
+    grade: str = Field(min_length=1)
+    lesson_number: int | None = None
+    teacher: str | None = None
+    source: str = "calendar"
 
 
 class CalendarMonth(BaseModel):

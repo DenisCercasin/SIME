@@ -7,6 +7,7 @@ from mcp.server.fastmcp import FastMCP
 from sime_mcp.config import MOLDOVA_TZ, Settings
 from sime_mcp.logging_utils import configure_logging
 from sime_mcp.services.calendar import CalendarService
+from sime_mcp.services.grades import GradeService
 from sime_mcp.services.homework import HomeworkService
 from sime_mcp.services.subjects import SubjectService
 
@@ -15,6 +16,7 @@ def create_server(settings: Settings | None = None) -> FastMCP:
     settings = settings or Settings.from_env()
     calendar = CalendarService(settings)
     homework = HomeworkService(calendar)
+    grades = GradeService(calendar)
     subjects = SubjectService(calendar)
     server = FastMCP(
         "SIME Diary", instructions="Read-only access to an authorized local SIME diary."
@@ -32,6 +34,14 @@ def create_server(settings: Settings | None = None) -> FastMCP:
     async def get_homework(start_date: str, end_date: str) -> list[dict]:
         """Return homework on lessons in an inclusive ISO date range; due dates are unknown."""
         entries = await homework.get_homework(
+            date.fromisoformat(start_date), date.fromisoformat(end_date)
+        )
+        return [item.model_dump(mode="json") for item in entries]
+
+    @server.tool()
+    async def get_grades(start_date: str, end_date: str) -> list[dict]:
+        """Return grades displayed on calendar lessons in an inclusive ISO date range."""
+        entries = await grades.get_grades(
             date.fromisoformat(start_date), date.fromisoformat(end_date)
         )
         return [item.model_dump(mode="json") for item in entries]

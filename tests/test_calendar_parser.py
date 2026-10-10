@@ -26,6 +26,15 @@ def test_missing_homework_room_and_romanian(events):
     assert lesson.subject == "Limba română"
     assert lesson.homework is None
     assert lesson.room is None
+    assert lesson.grades == ["9"]
+
+
+def test_multiple_displayed_grades_are_kept_separate(events):
+    events[1]["title"] = events[1]["title"].replace(
+        "<span class='lesson-grade'>9</span>",
+        "<span class='lesson-grade'>9</span><span class='lesson-grade'>10</span>",
+    )
+    assert parse_calendar_events(events)[1].grades == ["9", "10"]
 
 
 def test_duplicate_and_unknown_event(events):

@@ -62,6 +62,11 @@ def parse_calendar_events(events: Any) -> list[Lesson]:
                 teacher=_text(soup, ".lesson-teacher"),
                 room=_text(soup, ".lesson-room"),
                 homework=_text(soup, ".lesson-homework"),
+                grades=[
+                    value
+                    for element in soup.select(".lesson-grade")
+                    if (value := _clean(element.get_text(" ", strip=True))) is not None
+                ],
             )
         except (KeyError, TypeError, ValueError, ValidationError) as exc:
             raise InvalidCalendarDataError("A lesson event has invalid date or time data.") from exc

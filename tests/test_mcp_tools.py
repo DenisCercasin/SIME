@@ -18,6 +18,7 @@ async def test_mcp_tools_use_service_and_return_structured_data(monkeypatch, tmp
         start_time=time(8, 15),
         end_time=time(9),
         homework="Citiți pagina 12",
+        grades=["9"],
     )
 
     async def fake_range(self, start, end):
@@ -30,6 +31,7 @@ async def test_mcp_tools_use_service_and_return_structured_data(monkeypatch, tmp
     assert tools == {
         "get_schedule",
         "get_homework",
+        "get_grades",
         "get_subjects",
         "get_today_schedule",
         "get_week_schedule",
@@ -47,3 +49,10 @@ async def test_mcp_tools_use_service_and_return_structured_data(monkeypatch, tmp
         "get_homework", {"start_date": "2026-10-08", "end_date": "2026-10-08"}
     )
     assert "due_date" in json.dumps(homework, default=str)
+
+    grades = await server.call_tool(
+        "get_grades", {"start_date": "2026-10-08", "end_date": "2026-10-08"}
+    )
+    grades_text = json.dumps(grades, default=str, ensure_ascii=False)
+    assert '"grade": "9"' in grades_text
+    assert '"source": "calendar"' in grades_text

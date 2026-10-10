@@ -20,6 +20,7 @@ from sime_mcp.errors import AuthenticationRequiredError, SimeError
 from sime_mcp.logging_utils import configure_logging
 from sime_mcp.mcp_server import main as run_mcp
 from sime_mcp.services.calendar import CalendarService
+from sime_mcp.services.grades import GradeService
 from sime_mcp.services.homework import HomeworkService
 from sime_mcp.services.subjects import SubjectService
 from sime_mcp.storage.database import CalendarStore
@@ -112,6 +113,11 @@ async def _run(args: argparse.Namespace, settings: Settings) -> None:
             date.fromisoformat(args.start), date.fromisoformat(args.end)
         )
         _json([item.model_dump(mode="json") for item in result])
+    elif args.command == "grades":
+        result = await GradeService(calendar).get_grades(
+            date.fromisoformat(args.start), date.fromisoformat(args.end)
+        )
+        _json([item.model_dump(mode="json") for item in result])
     elif args.command == "subjects":
         result = await SubjectService(calendar).get_subjects(args.year, args.month)
         _json([item.model_dump(mode="json") for item in result])
@@ -140,6 +146,9 @@ def main() -> None:
     homework = sub.add_parser("homework")
     homework.add_argument("--from", dest="start", required=True)
     homework.add_argument("--to", dest="end", required=True)
+    grades = sub.add_parser("grades")
+    grades.add_argument("--from", dest="start", required=True)
+    grades.add_argument("--to", dest="end", required=True)
     subjects = sub.add_parser("subjects")
     subjects.add_argument("--year", type=int)
     subjects.add_argument("--month", type=int)
