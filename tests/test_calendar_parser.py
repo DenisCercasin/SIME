@@ -43,6 +43,28 @@ def test_duplicate_and_unknown_event(events):
     assert len(parse_calendar_events(events)) == 2
 
 
+@pytest.mark.parametrize("reverse", [False, True])
+def test_duplicate_lesson_combines_room_and_grade(events, reverse):
+    graded = events[0].copy()
+    graded["title"] = graded["title"].replace(
+        "<span class='lesson-room'>A33</span>",
+        "<span class='lesson-grade'>10</span>",
+    )
+    duplicates = [events[0], graded]
+    lesson = parse_calendar_events(duplicates[::-1] if reverse else duplicates)[0]
+    assert lesson.room == "A33"
+    assert lesson.grades == ["10"]
+
+
+def test_duplicate_lesson_keeps_repeated_marks(events):
+    graded = events[1].copy()
+    graded["title"] = graded["title"].replace(
+        "<span class='lesson-grade'>9</span>",
+        "<span class='lesson-grade'>9</span><span class='lesson-grade'>9</span>",
+    )
+    assert parse_calendar_events([events[1], graded])[0].grades == ["9", "9"]
+
+
 @pytest.mark.parametrize("bad", [{}, [{"title": "x"}], [1], "not json"])
 def test_malformed_response_rejected(bad):
     with pytest.raises(InvalidCalendarDataError):

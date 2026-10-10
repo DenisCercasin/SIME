@@ -10,6 +10,8 @@ Homework belongs to the **lesson date**. SIME's calendar event does not establis
 
 Grades are copied as text from the calendar card's `.lesson-grade` elements. The date is the associated lesson date; the integration does not infer when a mark was awarded or reinterpret unusual values. Lessons without a displayed grade have an empty `grades` list.
 
+SIME can return duplicate cards for one lesson with different details. The parser merges their displayed grades, homework, teacher, and room instead of discarding the later card.
+
 ## Architecture
 
 ```text

@@ -1,5 +1,6 @@
 """Parse SIME FullCalendar event JSON without executing embedded JavaScript."""
 
+from collections import Counter
 from datetime import datetime
 from typing import Any
 
@@ -32,12 +33,24 @@ def is_calendar_event_array(value: Any) -> bool:
     )
 
 
+def _merge_grades(first: list[str], second: list[str]) -> list[str]:
+    """Keep the largest observed count of each mark across duplicate cards."""
+    merged = first.copy()
+    remaining = Counter(first)
+    for grade in second:
+        if remaining[grade]:
+            remaining[grade] -= 1
+        else:
+            merged.append(grade)
+    return merged
+
+
 def parse_calendar_events(events: Any) -> list[Lesson]:
     if not is_calendar_event_array(events):
         raise InvalidCalendarDataError("Calendar response is not an event array.")
 
     lessons: list[Lesson] = []
-    seen: set[tuple] = set()
+    seen: dict[tuple, int] = {}
     for event in events:
         title = event["title"]
         soup = BeautifulSoup(title, "html.parser")
@@ -72,6 +85,17 @@ def parse_calendar_events(events: Any) -> list[Lesson]:
             raise InvalidCalendarDataError("A lesson event has invalid date or time data.") from exc
         key = (lesson.date, lesson.lesson_number, lesson.subject, lesson.start_time)
         if key not in seen:
-            seen.add(key)
+            seen[key] = len(lessons)
             lessons.append(lesson)
+        else:
+            index = seen[key]
+            original = lessons[index]
+            lessons[index] = original.model_copy(
+                update={
+                    "teacher": original.teacher or lesson.teacher,
+                    "room": original.room or lesson.room,
+                    "homework": original.homework or lesson.homework,
+                    "grades": _merge_grades(original.grades, lesson.grades),
+                }
+            )
     return sorted(lessons, key=lambda item: (item.date, item.start_time, item.lesson_number or 0))
