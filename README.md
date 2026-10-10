@@ -67,7 +67,18 @@ If a session expires, repeat `sime login`. Only one process should use the isola
 
 ## MCP server and local test client
 
-Run `.venv/bin/sime mcp` as a local STDIO MCP server. Configure an MCP compatible client to launch that command with this repository as its working directory. The read-only tools are:
+Run `.venv/bin/sime mcp` as a local STDIO MCP server. It waits silently for an MCP client; starting it in a terminal does not open a window or print a menu. Press Ctrl-C to stop a manually started server.
+
+To use it in the ChatGPT/Codex desktop app on this Mac, register the executable once (replace the path if you move the repository):
+
+```sh
+codex mcp add sime -- /absolute/path/to/SIME/.venv/bin/sime mcp
+codex mcp get sime
+```
+
+Restart the desktop app, type `/mcp` in the composer to check that `sime` is connected, then ask for a specific diary task such as "Use SIME to show my schedule for 2026-10-12" or "Use SIME to list homework from 2026-10-12 to 2026-10-18." The app starts the server when needed; a separate terminal process is unnecessary. Manual SIME login must already be valid (`.venv/bin/sime check-auth`). This local STDIO server is available to the desktop app on the same Mac, not to ChatGPT web.
+
+The read-only tools are:
 
 - `get_schedule(start_date, end_date)`
 - `get_homework(start_date, end_date)`
